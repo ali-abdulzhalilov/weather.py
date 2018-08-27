@@ -13,6 +13,7 @@
 """
 
 import urllib.request
+import requests
 
 type_options = {'current': 'weather', \
 				'for5': 'forecast', \
@@ -28,6 +29,14 @@ def do_magic():
 def do_a_thing(type, city_name=None, coordinates=None):
 	print('I got %s type for %s or at %s' % (type, city_name, coordinates))
 	
+	if !city_name and !coordinates:
+		coordinates = where_am_i()
+	
+def where_am_i():
+	import geocoder
+	
+	g = geocoder.ip('me')
+	return g.latlng
 	
 
 if (__name__=='__main__'):
@@ -42,5 +51,3 @@ if (__name__=='__main__'):
 	args = parser.parse_args()
 	
 	do_a_thing(args.type, args.city_name, args.coordinates)
-	#this = do_magic()
-	#print(this.read())
