@@ -12,32 +12,44 @@
 		TODO: Display result
 """
 
-import urllib.request
 import requests
+API_KEY = '2a069deb98184191ba6b519100b33edf'
 
-type_options = {'current': 'weather', \
-				'for5': 'forecast', \
+type_options = {'current': 'current', \
+				'for5': 'forecast/3hourly', \
 				'for16': 'forecast/daily'}
 
 def __init__():
 	print("am i a module")
 
-def do_magic():
-	response = urllib.request.urlopen('https://samples.openweathermap.org/data/2.5/weather?q=London,uk&appid=b6907d289e10d714a6e88b30761fae22')
-	return response
-	
-def do_a_thing(type, city_name=None, coordinates=None):
+def do_a_thing(type='current', city_name=None, coordinates=None):
 	print('I got %s type for %s or at %s' % (type, city_name, coordinates))
 	
-	if !city_name and !coordinates:
+	if not city_name and not coordinates:
 		coordinates = where_am_i()
+		
+	payload = {}
+	if city_name:
+		payload['q'] = city_name
+		
+	if coordinates:
+		lat, lon = coordinates
+		payload['lat'] = lat
+		payload['lon'] = lon
+	
+	payload['key'] = API_KEY
+		
+	url_prefab = 'https://api.weatherbit.io/v2.0/'+type_options[type]
+	print(url_prefab+str(payload))
+	r = requests.get(url_prefab, params=payload)
+	print(r.json())
+	
 	
 def where_am_i():
 	import geocoder
 	
 	g = geocoder.ip('me')
 	return g.latlng
-	
 
 if (__name__=='__main__'):
 	import argparse
