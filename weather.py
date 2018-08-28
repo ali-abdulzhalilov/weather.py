@@ -6,10 +6,9 @@
 			python weather.py [<type> [<city_name> | <latitude> <longitude>]
 	
 	Todo:
-		TODO: Properly read console arguments
-		TODO: Contruct request string
-		TODO: Receive response
-		TODO: Display result
+		TODO: Add an option to use your own api key
+		TODO: Write coherent documentation
+		TODO: Make printed stuff beautiful (optional)
 """
 
 import requests
@@ -22,7 +21,7 @@ type_options = {'current': 'current', \
 def __init__():
 	print("am i a module")
 
-def get_weather_data(type='current', city_name=None, coordinates=None):
+def get_weather_data(type='current', city_name=None, coordinates=None, key=API_KEY):
 	print('I got %s type for %s or at %s' % (type, city_name, coordinates))
 	
 	if not city_name and not coordinates:
@@ -37,7 +36,7 @@ def get_weather_data(type='current', city_name=None, coordinates=None):
 		payload['lat'] = lat
 		payload['lon'] = lon
 	
-	payload['key'] = API_KEY
+	payload['key'] = key
 		
 	url_prefab = 'https://api.weatherbit.io/v2.0/'+type_options[type]
 	print(url_prefab+str(payload))
@@ -86,6 +85,7 @@ if (__name__=='__main__'):
 	group = parser.add_mutually_exclusive_group()
 	group.add_argument('-n', '--city_name', help='City name')
 	group.add_argument('-c', '--coordinates', type=float, nargs=2, help='Coordinates of the location of your interest', metavar=('LATITUDE', 'LONGITUDE'))
+	parser.add_argument('-k', '--key', help='Your key form weatherbit.io')
 	
 	args = parser.parse_args()
 	
