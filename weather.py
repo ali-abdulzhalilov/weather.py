@@ -6,7 +6,6 @@
 			python weather.py [<type> [<city_name> | <latitude> <longitude>]
 	
 	Todo:
-		TODO: Add an option to use your own api key
 		TODO: Write coherent documentation
 		TODO: Make printed stuff beautiful (optional)
 """
@@ -18,53 +17,43 @@ type_options = {'current': 'current', \
 				'for5': 'forecast/3hourly', \
 				'for16': 'forecast/daily'}
 
-def __init__():
-	print("am i a module")
-
-def get_weather_data(type='current', city_name=None, coordinates=None, key=API_KEY):
-	print('I got %s type for %s or at %s' % (type, city_name, coordinates))
+def get(type='current', city_name=None, coordinates=None, key=API_KEY):
 	
-	if not city_name and not coordinates:
-		coordinates = where_am_i()
-		
 	payload = {}
 	if city_name:
-		payload['q'] = city_name
+		payload['city'] = city_name
 		
 	if coordinates:
 		lat, lon = coordinates
 		payload['lat'] = lat
 		payload['lon'] = lon
+		
+	if not city_name and not coordinates:
+		payload['ip'] = requests.get('https://api.ipify.org').text
 	
 	payload['key'] = key
-		
+	print(payload)
 	url_prefab = 'https://api.weatherbit.io/v2.0/'+type_options[type]
-	print(url_prefab+str(payload))
 	r = requests.get(url_prefab, params=payload)
 	return r.json()
 	
-def where_am_i():
-	import geocoder
-	
-	g = geocoder.ip('me')
-	return g.latlng
-	
-def print_weather_data(data):
-
-	count = len(data['data'])
+def print_data(data):
+	if 'city_name' in data:
+		print(data['city_name'])
+	#count = len(data['data'])
 	for entry in data['data']:
-		print_weather_entry(entry)
+		print_entry(entry)
 		
-def print_weather_entry(entry):
+def print_entry(entry):
 	what_to_show = {
-		'temp': 'Temperature: {} C',
-		'app_temp': 'Feels like: {} C',
+		'temp': 'Temperature: {} °C',
+		'app_temp': 'Feels like: {} °C',
 		'wind_spd': 'Wind speed: {} m/s',
 		'wind_cdir': 'Wind direction: {}',
 		'pop': 'Probability of precipitation: {}%',
-		'vis': 'Visibility: {}km',
-		'max_temp': 'Maximum temperature: {} C',
-		'min_temp': 'Minimum temperature: {} C',
+		'vis': 'Visibility: {} km',
+		'max_temp': 'Maximum temperature: {} °C',
+		'min_temp': 'Minimum temperature: {} °C',
 	}
 	
 	datetime = entry['datetime'].split(':')
@@ -89,5 +78,5 @@ if (__name__=='__main__'):
 	
 	args = parser.parse_args()
 	
-	data = get_weather_data(args.type, args.city_name, args.coordinates)
-	print_weather_data(data)
+	data = get(args.type, args.city_name, args.coordinates)
+	print_data(data)
