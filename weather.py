@@ -17,18 +17,18 @@ type_options = {'current': 'current', \
 				'for5': 'forecast/3hourly', \
 				'for16': 'forecast/daily'}
 
-def get(type='current', city_name=None, coordinates=None, key=API_KEY):
+def get(type='current', city_name=None, coordinates=None, ip=None, key=API_KEY):
 	
 	payload = {}
 	if city_name:
 		payload['city'] = city_name
-		
-	if coordinates:
+	elif coordinates:
 		lat, lon = coordinates
 		payload['lat'] = lat
 		payload['lon'] = lon
-		
-	if not city_name and not coordinates:
+	elif ip:
+		payload['ip'] = ip
+	else:
 		payload['ip'] = requests.get('https://api.ipify.org').text
 	
 	payload['key'] = key
@@ -38,11 +38,14 @@ def get(type='current', city_name=None, coordinates=None, key=API_KEY):
 	return r.json()
 	
 def print_data(data):
-	if 'city_name' in data:
-		print(data['city_name'])
-	#count = len(data['data'])
-	for entry in data['data']:
-		print_entry(entry)
+	if 'error' in data:
+		print(data['error'])
+	else:
+		if 'city_name' in data:
+			print(data['city_name'])
+		#count = len(data['data'])
+		for entry in data['data']:
+			print_entry(entry)
 		
 def print_entry(entry):
 	what_to_show = {
@@ -74,9 +77,10 @@ if (__name__=='__main__'):
 	group = parser.add_mutually_exclusive_group()
 	group.add_argument('-n', '--city_name', help='City name')
 	group.add_argument('-c', '--coordinates', type=float, nargs=2, help='Coordinates of the location of your interest', metavar=('LATITUDE', 'LONGITUDE'))
+	group.add_argument('-ip', '--ip_address', help='IP address')
 	parser.add_argument('-k', '--key', help='Your key form weatherbit.io')
 	
 	args = parser.parse_args()
 	
-	data = get(args.type, args.city_name, args.coordinates)
+	data = get(args.type, args.city_name, args.coordinates, args.ip_address)
 	print_data(data)
