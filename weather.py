@@ -1,23 +1,12 @@
-""" 
-	smol weather script, which can be used as module or as standalone script
-	
-	Usage:
-		As script:
-			python weather.py [<type> [<city_name> | <latitude> <longitude>]
-	
-	Todo:
-		TODO: Write coherent documentation
-		TODO: Make printed stuff beautiful (optional)
-"""
-
 import requests
 API_KEY = '2a069deb98184191ba6b519100b33edf'
 
 type_options = {'current': 'current', \
-				'for5': 'forecast/3hourly', \
-				'for16': 'forecast/daily'}
+				'hourly': 'forecast/hourly', \
+				'3hourly': 'forecast/3hourly', \
+				'daily': 'forecast/daily'}
 
-def get(type='current', city_name=None, coordinates=None, ip=None, key=API_KEY):
+def get(type='current', city_name=None, coordinates=None, ip=None, key=None):
 	
 	payload = {}
 	if city_name:
@@ -31,7 +20,7 @@ def get(type='current', city_name=None, coordinates=None, ip=None, key=API_KEY):
 	else:
 		payload['ip'] = requests.get('https://api.ipify.org').text
 	
-	payload['key'] = key
+	payload['key'] = key if key else API_KEY
 	print(payload)
 	url_prefab = 'https://api.weatherbit.io/v2.0/'+type_options[type]
 	r = requests.get(url_prefab, params=payload)
@@ -57,13 +46,27 @@ def print_entry(entry):
 		'vis': 'Visibility: {} km',
 		'max_temp': 'Maximum temperature: {} °C',
 		'min_temp': 'Minimum temperature: {} °C',
+		'sunrise' : 'Sunrise: {}',
+		'sunset' : 'Sunset: {}',
 	}
 	
+	
+	if 'valid_date' in entry:
+		datetime = entry['valid_date']
+	elif 'timestamp_local' in entry:
+		datetime = ' '.join(entry['timestamp_local'].split('T'))
+	else:
+		datetime = 'current'
+		
+	"""
 	datetime = entry['datetime'].split(':')
+	datetime = entry['timestamp_local'].split(':')
 	date = datetime[0]
-	time = ' ' if len(datetime) == 1 else datetime[1] + ":00 "
+	time = '' if len(datetime) == 1 else datetime[1] + ":00 "
 	
 	print('----- %s %s-----' % (date, time))
+	"""
+	print('----- %s -----' % datetime)
 	for thing in what_to_show:
 		if thing in entry:
 			print(what_to_show[thing].format(entry[thing]))
@@ -82,5 +85,5 @@ if (__name__=='__main__'):
 	
 	args = parser.parse_args()
 	
-	data = get(args.type, args.city_name, args.coordinates, args.ip_address)
+	data = get(args.type, args.city_name, args.coordinates, args.ip_address, args.key)
 	print_data(data)
